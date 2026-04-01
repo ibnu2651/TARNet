@@ -7,4 +7,4 @@
 #SBATCH --gres=gpu:1
 #SBATCH -p gpu
 
-srun python script.py --dataset AF --task_type classification
+srun python script.py --dataset AF --task_type classification --batch 8
