@@ -8,4 +8,4 @@
 #SBATCH -p gpu
 
 srun python script.py --dataset BasicMotions --task_type classification --batch 32
-srun python prune_finetune_test.py --checkpoint checkpoints/AF_best.pt --dataset BasicMotions --batch 32 --new_nhid_tar 64 --new_nhid_task 64 --new_num_layers 1 --epochs 20 --output checkpoints/AF_pruned_finetuned.pt
+srun python prune_finetune_test.py --checkpoint checkpoints/BasicMotions_best.pt --dataset BasicMotions --batch 32 --new_nhid_tar 64 --new_nhid_task 64 --new_num_layers 1 --epochs 20 --output checkpoints/BasicMotions_pruned_finetuned.pt
