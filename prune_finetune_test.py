@@ -230,9 +230,9 @@ def merge_prop_from_checkpoint(prop, ckpt):
 
     # Keep current dataset/task choice, but reuse architecture/training-critical values by default.
     for k in [
-        "batch", "lr", "nlayers", "emb_size", "nhead", "task_rate", "masking_ratio",
-        "lamb", "epochs", "ratio_highest_attention", "avg", "dropout", "nhid",
-        "nhid_task", "nhid_tar", "task_type"
+        "masking_ratio",
+        "lamb", "ratio_highest_attention", "avg", "dropout",
+        "task_type"
     ]:
         if k in saved_prop:
             prop[k] = saved_prop[k]
