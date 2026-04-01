@@ -421,6 +421,8 @@ def main():
         prop["nlayers"] = args.new_num_layers
         print(f"Dropped transformer_encoder layers -> {args.new_num_layers}")
 
+    model = model.to(prop["device"])
+
     params_after = count_params(model)
     print(f"Parameters after pruning:  {params_after}")
     print(f"Reduction: {100.0 * (1.0 - params_after / params_before):.2f}%")
