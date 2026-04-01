@@ -319,5 +319,15 @@ def training(model, optimizer, criterion_tar, criterion_task, best_model, best_o
     elif prop['task_type'] == 'regression':
         print('Dataset: ' + prop['dataset'] + ', RMSE: ' + str(rmse) + ', MAE: ' + str(mae))
 
+    os.makedirs("checkpoints", exist_ok=True)
+
+    torch.save({
+        "model_state_dict": best_model.state_dict(),
+        "optimizer_state_dict": best_optimizer.state_dict(),
+        "prop": prop,
+    }, f"checkpoints/{prop['dataset']}_best.pt")
+
+    print(f"Saved checkpoint to checkpoints/{prop['dataset']}_best.pt")
+
     del model
     torch.cuda.empty_cache()
