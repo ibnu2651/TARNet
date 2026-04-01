@@ -1,0 +1,30 @@
+Loading and preprocessing data...
+Building model...
+Parameters before pruning: 118022
+Pruned tar_net hidden width -> 96
+Pruned class_net hidden width -> 96
+Dropped transformer_encoder layers -> 1
+Parameters after pruning:  65798
+Reduction: 44.25%
+Finetuning pruned model...
+Finetune epoch 1/10 | tar_masked=3.507262 | tar_unmasked=2.681909 | task_loss=0.652762 | acc=0.775000, f1=0.717868
+Finetune epoch 2/10 | tar_masked=4.967428 | tar_unmasked=2.415073 | task_loss=0.217211 | acc=0.800000, f1=0.761905
+Finetune epoch 3/10 | tar_masked=5.253162 | tar_unmasked=2.356899 | task_loss=0.029455 | acc=0.900000, f1=0.895833
+Finetune epoch 4/10 | tar_masked=5.218585 | tar_unmasked=2.345327 | task_loss=0.030714 | acc=0.925000, f1=0.923274
+Finetune epoch 5/10 | tar_masked=5.194763 | tar_unmasked=2.269085 | task_loss=0.010615 | acc=0.925000, f1=0.923274
+Finetune epoch 6/10 | tar_masked=5.495085 | tar_unmasked=2.213186 | task_loss=0.005915 | acc=0.925000, f1=0.921250
+Finetune epoch 7/10 | tar_masked=5.092974 | tar_unmasked=2.241292 | task_loss=0.006017 | acc=0.925000, f1=0.921250
+Finetune epoch 8/10 | tar_masked=5.614409 | tar_unmasked=2.145579 | task_loss=0.007396 | acc=0.925000, f1=0.921250
+Finetune epoch 9/10 | tar_masked=5.254694 | tar_unmasked=2.189115 | task_loss=0.107633 | acc=0.925000, f1=0.921250
+Finetune epoch 10/10 | tar_masked=5.752817 | tar_unmasked=2.100421 | task_loss=0.003248 | acc=0.925000, f1=0.921250
+Final test metrics:
+Test loss: 0.487285
+Test acc:  0.925000
+Test prec: 0.942308
+Test rec:  0.925000
+Test f1:   0.923274
+=== Inference Benchmark ===
+Original model -> mean: 0.002567s, median: 0.002466s
+Pruned model   -> mean: 0.001625s, median: 0.001610s
+Speedup (mean): 1.58x
+Saved pruned + finetuned checkpoint to: checkpoints/BasicMotions_pruned_finetuned.pt
