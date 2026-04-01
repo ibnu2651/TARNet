@@ -1,7 +1,7 @@
 #!/bin/bash
 #SBATCH --job-name=tarnet
-#SBATCH --output=tarnet_train.slurmlog
-#SBATCH --error=tarnet_train.slurmlog
+#SBATCH --output=tarnet_train_64_2.slurmlog
+#SBATCH --error=tarnet_train_64_2.slurmlog
 #SBATCH --time=02:00:00
 #SBATCH --mem=16G
 #SBATCH --gres=gpu:1
