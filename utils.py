@@ -58,15 +58,15 @@ def get_prop(args):
 
 
 def data_loader(dataset, data_path, task_type): 
-    X_train = np.load(os.path.join(data_path + 'X_train.npy'), allow_pickle = True).astype(np.float)
-    X_test = np.load(os.path.join(data_path + 'X_test.npy'), allow_pickle = True).astype(np.float)
+    X_train = np.load(os.path.join(data_path + 'X_train.npy'), allow_pickle = True).astype(np.float32)
+    X_test = np.load(os.path.join(data_path + 'X_test.npy'), allow_pickle = True).astype(np.float32)
 
     if task_type == 'classification':
         y_train = np.load(os.path.join(data_path + 'y_train.npy'), allow_pickle = True)
         y_test = np.load(os.path.join(data_path + 'y_test.npy'), allow_pickle = True)
     else:
-        y_train = np.load(os.path.join(data_path + 'y_train.npy'), allow_pickle = True).astype(np.float)
-        y_test = np.load(os.path.join(data_path + 'y_test.npy'), allow_pickle = True).astype(np.float)
+        y_train = np.load(os.path.join(data_path + 'y_train.npy'), allow_pickle = True).astype(np.float32)
+        y_test = np.load(os.path.join(data_path + 'y_test.npy'), allow_pickle = True).astype(np.float32)
         
     return X_train, y_train, X_test, y_test
     
