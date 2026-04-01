@@ -44,7 +44,13 @@ def main():
     print(X_train_task.shape, y_train_task.shape, X_test.shape, y_test.shape)
     print('Data preprocessing complete...')
 
-    prop['nclasses'] = torch.max(y_train_task).item() + 1 if prop['task_type'] == 'classification' else None
+    if prop['task_type'] == 'classification':
+        if y_train_task.ndim > 1:
+            y_train_task = torch.argmax(y_train_task, dim=1)
+            y_test = torch.argmax(y_test, dim=1)
+        prop['nclasses'] = int(torch.max(y_train_task).item() + 1)
+    else:
+        prop['nclasses'] = None
     prop['dataset'], prop['seq_len'], prop['input_size'] = prop['dataset'], X_train_task.shape[1], X_train_task.shape[2]
     prop['device'] = torch.device('cuda:0' if torch.cuda.is_available() else "cpu")
     
