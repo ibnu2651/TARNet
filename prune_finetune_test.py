@@ -399,6 +399,8 @@ def main():
     model.load_state_dict(state_dict, strict=True)
     model.eval()
 
+    original_model = copy.deepcopy(model)
+
     params_before = count_params(model)
     print(f"Parameters before pruning: {params_before}")
 
@@ -433,9 +435,58 @@ def main():
     print("Final test metrics:")
     print_metrics(final_metrics, prop["task_type"])
 
+    run_inference_benchmark(original_model, model, X_test, prop)
+
     save_pruned_checkpoint(args.output, model, prop, source_checkpoint, final_metrics, args)
     print(f"Saved pruned + finetuned checkpoint to: {args.output}")
 
+
+def benchmark_inference(model, X_test, device, runs=100):
+    import time
+    model.eval()
+
+    # take a single batch
+    batch = X_test[:model.batch] if hasattr(model, 'batch') else X_test[:32]
+    batch = batch.to(device)
+
+    times = []
+
+    with torch.no_grad():
+        # warmup (important for GPU)
+        for _ in range(10):
+            _ = model(batch, "classification")
+
+        for _ in range(runs):
+            if device.type == "cuda":
+                torch.cuda.synchronize()
+            start = time.time()
+
+            _ = model(batch, "classification")
+
+            if device.type == "cuda":
+                torch.cuda.synchronize()
+            end = time.time()
+
+            times.append(end - start)
+
+    times = torch.tensor(times)
+    mean_time = times.mean().item()
+    median_time = times.median().item()
+
+    return mean_time, median_time
+
+
+def run_inference_benchmark(original_model, pruned_model, X_test, prop):
+    print("=== Inference Benchmark ===")
+
+    mean_o, median_o = benchmark_inference(original_model, X_test, prop["device"])
+    print(f"Original model -> mean: {mean_o:.6f}s, median: {median_o:.6f}s")
+
+    mean_p, median_p = benchmark_inference(pruned_model, X_test, prop["device"])
+    print(f"Pruned model   -> mean: {mean_p:.6f}s, median: {median_p:.6f}s")
+
+    speedup = mean_o / mean_p if mean_p > 0 else float('inf')
+    print(f"Speedup (mean): {speedup:.2f}x")
 
 if __name__ == "__main__":
     main()
