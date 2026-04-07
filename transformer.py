@@ -119,7 +119,7 @@ class TransformerEncoder(nn.Module):
             see the docs in Transformer class.
         """
         output = src
-        attn_output = torch.zeros((src.shape[1], src.shape[0], src.shape[0]), device = self.device) # batch, seq_len, seq_len
+        attn_output = torch.zeros((src.shape[1], src.shape[0], src.shape[0]), device = src.device) # batch, seq_len, seq_len
         
         for mod in self.layers:
             output, attn = mod(output, src_mask = mask, src_key_padding_mask = src_key_padding_mask)
