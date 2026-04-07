@@ -186,6 +186,10 @@ def run_onnx_inference(ort_session, batch_tensor):
 def compare_pytorch_vs_onnx(model, fp32_path, int8_path, X_test, y_test, prop):
     model.eval()
 
+    n = min(X_test.shape[0], y_test.shape[0])
+    X_test = X_test[:n]
+    y_test = y_test[:n]
+
     ort_fp32 = ort.InferenceSession(fp32_path, providers=["CPUExecutionProvider"])
     ort_int8 = ort.InferenceSession(int8_path, providers=["CPUExecutionProvider"])
 
