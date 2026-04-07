@@ -334,6 +334,8 @@ def main():
     export_to_onnx(model, sample_input, args.onnx_fp32, opset=args.opset)
     quantize_onnx(args.onnx_fp32, args.onnx_int8)
 
+    model = model.to(prop["device"]).eval()
+
     print("Comparing PyTorch vs ONNX...")
     compare_pytorch_vs_onnx(model, args.onnx_fp32, args.onnx_int8, X_test, y_test, prop)
 
