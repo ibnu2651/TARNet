@@ -193,23 +193,28 @@ def compare_pytorch_vs_onnx(model, fp32_path, int8_path, X_test, y_test, prop):
     onnx_fp32_outputs = []
     onnx_int8_outputs = []
 
-    batch_size = prop["batch"]
+    fixed_batch = prop["batch"]
 
-    with torch.no_grad():
-        for start in range(0, X_test.shape[0], batch_size):
-            batch = X_test[start:start + batch_size].to(prop["device"]).float()
+    for start in range(0, X_test.shape[0], fixed_batch):
+        batch = X_test[start:start + fixed_batch]
 
-            pt_out = model(batch, "classification")[0].cpu()
-            onnx_fp32_out = run_onnx_inference(ort_fp32, batch)
-            onnx_int8_out = run_onnx_inference(ort_int8, batch)
+        pt_out = run_pytorch_batch(model, batch, prop["device"], fixed_batch)
+        onnx_fp32_out = run_onnx_batch(ort_fp32, batch, fixed_batch)
+        onnx_int8_out = run_onnx_batch(ort_int8, batch, fixed_batch)
 
-            pt_outputs.append(pt_out)
-            onnx_fp32_outputs.append(onnx_fp32_out)
-            onnx_int8_outputs.append(onnx_int8_out)
+        pt_outputs.append(pt_out)
+        onnx_fp32_outputs.append(onnx_fp32_out)
+        onnx_int8_outputs.append(onnx_int8_out)
 
     pt_outputs = torch.cat(pt_outputs, dim=0)
     onnx_fp32_outputs = torch.cat(onnx_fp32_outputs, dim=0)
     onnx_int8_outputs = torch.cat(onnx_int8_outputs, dim=0)
+    y_test = y_test.cpu()
+
+    print("pt_outputs shape:", pt_outputs.shape)
+    print("onnx_fp32_outputs shape:", onnx_fp32_outputs.shape)
+    print("onnx_int8_outputs shape:", onnx_int8_outputs.shape)
+    print("y_test shape:", y_test.shape)
 
     fp32_max_abs_diff = torch.max(torch.abs(pt_outputs - onnx_fp32_outputs)).item()
     int8_max_abs_diff = torch.max(torch.abs(pt_outputs - onnx_int8_outputs)).item()
@@ -217,28 +222,17 @@ def compare_pytorch_vs_onnx(model, fp32_path, int8_path, X_test, y_test, prop):
     print(f"Max abs diff (PyTorch vs ONNX FP32): {fp32_max_abs_diff:.8f}")
     print(f"Max abs diff (PyTorch vs ONNX INT8): {int8_max_abs_diff:.8f}")
 
-    if prop["task_type"] == "classification":
+    pt_preds = pt_outputs.argmax(dim=1)
+    onnx_fp32_preds = onnx_fp32_outputs.argmax(dim=1)
+    onnx_int8_preds = onnx_int8_outputs.argmax(dim=1)
 
+    pt_acc = (pt_preds == y_test).float().mean().item()
+    onnx_fp32_acc = (onnx_fp32_preds == y_test).float().mean().item()
+    onnx_int8_acc = (onnx_int8_preds == y_test).float().mean().item()
 
-        pt_preds = pt_outputs.argmax(dim=1)
-        onnx_fp32_preds = onnx_fp32_outputs.argmax(dim=1)
-        onnx_int8_preds = onnx_int8_outputs.argmax(dim=1)
-
-        print("pt_outputs shape:", pt_outputs.shape)
-        print("onnx_fp32_outputs shape:", onnx_fp32_outputs.shape)
-        print("onnx_int8_outputs shape:", onnx_int8_outputs.shape)
-        print("y_test shape:", y_test.shape)
-
-        print("pt_preds shape:", pt_preds.shape)
-        print("y_test shape:", y_test.cpu().shape)
-
-        pt_acc = (pt_preds == y_test.cpu()).float().mean().item()
-        onnx_fp32_acc = (onnx_fp32_preds == y_test.cpu()).float().mean().item()
-        onnx_int8_acc = (onnx_int8_preds == y_test.cpu()).float().mean().item()
-
-        print(f"PyTorch accuracy:   {pt_acc * 100:.4f}%")
-        print(f"ONNX FP32 accuracy: {onnx_fp32_acc * 100:.4f}%")
-        print(f"ONNX INT8 accuracy: {onnx_int8_acc * 100:.4f}%")
+    print(f"PyTorch accuracy:   {pt_acc * 100:.4f}%")
+    print(f"ONNX FP32 accuracy: {onnx_fp32_acc * 100:.4f}%")
+    print(f"ONNX INT8 accuracy: {onnx_int8_acc * 100:.4f}%")
 
 
 def benchmark_pytorch(model, X_test, device, runs=100):
@@ -291,6 +285,37 @@ def benchmark_onnx(onnx_path, X_test, batch_size=32, runs=100):
 
     times = torch.tensor(times)
     return times.mean().item(), times.median().item()
+
+
+def run_pytorch_batch(model, batch, device, fixed_batch):
+    actual_bs = batch.shape[0]
+    batch = batch.to(device).float()
+
+    if actual_bs < fixed_batch:
+        pad = batch[:1].repeat(fixed_batch - actual_bs, 1, 1)
+        batch = torch.cat([batch, pad], dim=0)
+
+    with torch.no_grad():
+        out, _ = model(batch, "classification")
+        out = out[:actual_bs].cpu()
+
+    return out
+
+
+def run_onnx_batch(ort_session, batch, fixed_batch):
+    actual_bs = batch.shape[0]
+    batch = batch.cpu().float()
+
+    if actual_bs < fixed_batch:
+        pad = batch[:1].repeat(fixed_batch - actual_bs, 1, 1)
+        batch = torch.cat([batch, pad], dim=0)
+
+    batch_np = batch.numpy().astype(np.float32)
+    input_name = ort_session.get_inputs()[0].name
+    out = ort_session.run(None, {input_name: batch_np})[0]
+    out = torch.from_numpy(out[:actual_bs])
+
+    return out
 
 
 def main():
