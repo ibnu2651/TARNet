@@ -199,7 +199,7 @@ def compare_pytorch_vs_onnx(model, fp32_path, int8_path, X_test, y_test, prop):
         for start in range(0, X_test.shape[0], batch_size):
             batch = X_test[start:start + batch_size].to(prop["device"]).float()
 
-            pt_out = model(batch, "classification").cpu()
+            pt_out = model(batch, "classification")[0].cpu()
             onnx_fp32_out = run_onnx_inference(ort_fp32, batch)
             onnx_int8_out = run_onnx_inference(ort_int8, batch)
 
