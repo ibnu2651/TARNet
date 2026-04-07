@@ -328,6 +328,8 @@ def main():
     pt_metrics = evaluate_pt_model(model, X_test, y_test, prop)
     print("PyTorch test metrics:", pt_metrics)
 
+    model = model.to("cpu").eval()
+    wrapper = ClassificationWrapper(model).to("cpu").eval()
     sample_input = X_test[:prop["batch"]].to("cpu").float()
     export_to_onnx(model, sample_input, args.onnx_fp32, opset=args.opset)
     quantize_onnx(args.onnx_fp32, args.onnx_int8)
