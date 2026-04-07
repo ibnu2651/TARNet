@@ -218,9 +218,19 @@ def compare_pytorch_vs_onnx(model, fp32_path, int8_path, X_test, y_test, prop):
     print(f"Max abs diff (PyTorch vs ONNX INT8): {int8_max_abs_diff:.8f}")
 
     if prop["task_type"] == "classification":
+
+
         pt_preds = pt_outputs.argmax(dim=1)
         onnx_fp32_preds = onnx_fp32_outputs.argmax(dim=1)
         onnx_int8_preds = onnx_int8_outputs.argmax(dim=1)
+
+        print("pt_outputs shape:", pt_outputs.shape)
+        print("onnx_fp32_outputs shape:", onnx_fp32_outputs.shape)
+        print("onnx_int8_outputs shape:", onnx_int8_outputs.shape)
+        print("y_test shape:", y_test.shape)
+
+        print("pt_preds shape:", pt_preds.shape)
+        print("y_test shape:", y_test.cpu().shape)
 
         pt_acc = (pt_preds == y_test.cpu()).float().mean().item()
         onnx_fp32_acc = (onnx_fp32_preds == y_test.cpu()).float().mean().item()
