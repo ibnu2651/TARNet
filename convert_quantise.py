@@ -314,6 +314,7 @@ def main():
 
     prop = build_prop_from_args(args)
     source_checkpoint, state_dict = load_checkpoint(args.checkpoint, prop["device"])
+    print(source_checkpoint.get("prop", {}))
     prop = merge_prop_from_checkpoint(prop, source_checkpoint)
 
     print("Loading and preprocessing data...")
