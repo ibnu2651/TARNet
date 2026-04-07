@@ -152,7 +152,6 @@ def export_to_onnx(model, sample_input, fp32_path, opset=17):
             output_names=["output"],
             dynamic_axes={
                 "input": {
-                    0: "batch_size",
                     1: "seq_len",
                 },
                 "output": {
@@ -329,7 +328,7 @@ def main():
     pt_metrics = evaluate_pt_model(model, X_test, y_test, prop)
     print("PyTorch test metrics:", pt_metrics)
 
-    sample_input = X_test[:1].to("cpu").float()
+    sample_input = X_test[:prop["batch"]].to("cpu").float()
     export_to_onnx(model, sample_input, args.onnx_fp32, opset=args.opset)
     quantize_onnx(args.onnx_fp32, args.onnx_int8)
 
